@@ -16,11 +16,11 @@ do {
     let message: String?
 
     if typeText.contains("pooler") {
-        scriptPath = "../pooler/main.py"
-        message = "RAN \n ../pooler/main.py"
+        scriptPath = "../pooler/main.swift"
+        message = "RAN \n ../pooler/main.swift"
     } else if typeText.contains("bank") {
-        scriptPath = "../bank/main.py"
-        message = "RAN \n ../bank/main.py"
+        scriptPath = "../bank/main.swift"
+        message = "RAN \n ../bank/main.swift"
     } else {
         scriptPath = nil
         message = nil
