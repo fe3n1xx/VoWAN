@@ -1,5 +1,6 @@
 {
     "coin-name": "", 
     "coin-code": "",
-    "coin-type": "VoWAN"
+    "coin-type": "VoWAN",
+    "port": 44444
 }
