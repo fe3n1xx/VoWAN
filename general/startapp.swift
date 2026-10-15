@@ -18,9 +18,23 @@ do {
     if typeText.contains("pooler") {
         scriptPath = "../pooler/main.swift"
         message = "RAN \n ../pooler/main.swift"
+        process.executableURL = URL(scriptPath)
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            print("Couldn't launch pooler.swift. ERROR: \(error)")
+        }
     } else if typeText.contains("bank") {
         scriptPath = "../bank/main.swift"
         message = "RAN \n ../bank/main.swift"
+        process.executableURL = URL(scriptPath)
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            print("Couldn't launch bank.swift. ERROR: \(error)")
+        }
     } else {
         scriptPath = nil
         message = nil
