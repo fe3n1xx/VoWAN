@@ -2,5 +2,6 @@
     "coin-name": "", 
     "coin-code": "",
     "coin-type": "VoWAN",
-    "port": 44444
+    "port": 44444,
+    "vowan_resolver_server": 0
 }
