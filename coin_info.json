@@ -3,5 +3,7 @@
     "coin-code": "",
     "coin-type": "VoWAN",
     "port": 44444,
-    "vowan_resolver_server": 0
+    "local_port": 44444,
+    "vowan_resolver_server": 0,
+    "nfc": true
 }
