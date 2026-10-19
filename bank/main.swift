@@ -60,6 +60,15 @@ while true {
             } else {
                 print("NFC is turned OFF")
             }
+        } else if userInput.contains("chres") {
+            // change resolver server
+            process.executableURL = URL("chres.swift")
+            do {
+                try process.run()
+                process.waitUntilExit()
+            } catch{
+                print("Couldn't launch chres.swift. ERROR: \(error)")
+            }
         }
     }
 }
