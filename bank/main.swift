@@ -1,5 +1,6 @@
 import Foundation
 let process = process()
+let nfcOn: Bool
 print("-- VoWAN BANK PORTAL --\n")
 
 let coinInfo = "../coin_info.json"
@@ -68,6 +69,14 @@ while true {
                 process.waitUntilExit()
             } catch{
                 print("Couldn't launch chres.swift. ERROR: \(error)")
+            }
+        } else if userInput.contains("updres") {
+            //  update lsresolvers.json
+            do {
+                try process.run()
+                process.waitUntilExit()
+            } else {
+                print("Couldn't launch updres.swift. ERROR: \(error)")
             }
         }
     }

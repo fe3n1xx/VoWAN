@@ -1,0 +1,1 @@
+console.log("This is a placeholder for the UI pooling history/settings portal.")
