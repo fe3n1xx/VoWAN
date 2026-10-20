@@ -6,6 +6,7 @@ import Network
 
 let bankIP: String
 let toBank: String
+let hostnr: String
 let coinInfo = "../coin_info.json"
 
 if let jsonData = try? Data(contentsOf: URL(fileURLWithPath: coinInfo)) {
@@ -28,7 +29,7 @@ if let userInput = readline() {
     // Send encrypted request to resolve server
 
     let toBank = userInput
-    let request = "resolve \(userInput)"
+    let request = Data("resolve \(userInput)".utf8)
     let connection = NWConnection(
         //
         host: resolver,
@@ -163,7 +164,43 @@ func checkBank(ip: String, portNumber: UInt16) {
 
 if checkBank(ip: bankIP, portNumber: port) {
     // Get a host and start the transaction
+    let request = Data("gethost".utf8)
+    let connection = NWConnection(
+        //
+        host: resolver,
+        port: NWEndPoint.Port(rawvalue: port),
+        using: NWParameters(tls: NWProtocolTLS.Options()
+            tcp: NWProtocolTCP.Options()
+        )
+
+    )
+    connection.stateUpdateHandler = { state in
+        switch state {
+        case .ready:
+            connection.send(
+                content: Data(request),
+                completion: .contentProcessed { error in
+                    if let error { print("Couldn't send host resolve request: \(error)") }
+                }
+            )
+            connection.recieve(minimumIncompleteLength: 1, maximumLength: 4096) {
+                data, _,_, error in
+                if let error { print("Recieve Error: \(error)")}
+                if let data { print("Data recieved from \(resolve): \(error)") }
+                let hostnr = data
+            }
+        
+        case .failed(let error):
+            print("Connection failed: \(error)")
+        default:
+            break
+        }
+    }
+    connection.start(queue: .main)
 } catch {
     print("Failed to connect to the bank: \(toBank)")
     break
 }
+let host = hostnr.replacingOccurences(of: "host: ", with: "")
+print("Host found! Host: \(host)")
+//
