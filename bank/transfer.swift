@@ -12,11 +12,11 @@ let coinInfo = "../coin_info.json"
 if let jsonData = try? Data(contentsOf: URL(fileURLWithPath: coinInfo)) {
     do {
         //
-        if let data = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: any] {
+        if let data = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
             //
-            let port = data["port"] as Integer
+            let port = (data["port"] as? NSNumber)?.uint16Value
             let resolver = data["vowan_resolver_server"] as String
-            let localPort = data["local_port"] as Integer
+            let localPort = (data["local_port"] as? NSNumber)?.uint16Value
         } catch {
             print("Error parsing JSON")
         }
@@ -24,7 +24,7 @@ if let jsonData = try? Data(contentsOf: URL(fileURLWithPath: coinInfo)) {
 }
 
 print("Enter a bank to transfer to\n")
-if let userInput = readline() { 
+if let userInput = readLine() { 
 
     // Send encrypted request to resolve server
 
@@ -33,7 +33,7 @@ if let userInput = readline() {
     let connection = NWConnection(
         //
         host: resolver,
-        port: NWEndPoint.Port(rawvalue: port),
+        port: NWEndpoint.Port(rawValue: port),
         using: NWParameters(tls: NWProtocolTLS.Options()
             tcp: NWProtocolTCP.Options()
         )
@@ -48,7 +48,7 @@ if let userInput = readline() {
                     if let error { print("Couldn't send resolve request: \(error)") }
                 }
             )
-            connection.recieve(minimumIncompleteLength: 1, maximumLength: 4096) {
+            connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) {
                 data, _,_, error in
                 if let error { print("Recieve Error: \(error)")}
                 if let data { print("Data recieved from \(resolve): \(error)") }
@@ -98,11 +98,11 @@ if let userInput = readline() {
             print("IP Resolve Complete.")
         }
     }
-    listener.start(queue: main)
+    listener.start(DispatchQueue: main)
 }
 if ipRecieved {
     // example recieved message: "IP 196.168.1.1" (recievedData)
-    let bankIP = recievedIP.replacingOccurences(of: "IP ",with: "")
+    let bankIP = recievedIP.replacingOccurrences(of: "IP ",with: "")
     let gotBankIP: Bool = true
 } else {
     return
@@ -187,7 +187,7 @@ if checkBank(ip: bankIP, portNumber: port) {
                 data, _,_, error in
                 if let error { print("Recieve Error: \(error)")}
                 if let data { print("Data recieved from \(resolve): \(error)") }
-                let hostnr = data
+                let hostnr = String(decoding: data, as: UTF8.self)
             }
         
         case .failed(let error):
@@ -203,4 +203,56 @@ if checkBank(ip: bankIP, portNumber: port) {
 }
 let host = hostnr.replacingOccurences(of: "host: ", with: "")
 print("Host found! Host: \(host)")
-//
+// Send initial ping/pong request to host to check it's online
+guard let port = NWEndpoint.Port(rawValue: portNumber) else {
+        print("Invalid bank port")
+        return
+    }
+
+let connection = NWConnection(
+        host: NWEndpoint.Host(ip),
+        port: port,
+        using: .tls
+    )
+
+connection.stateUpdateHandler = { state in
+    switch state {
+    case .ready:
+        print("TLS connection to host established")
+
+        connection.send(
+            content: Data("PING\n".utf8),
+            completion: .contentProcessed { error in
+                if let error {
+                    print("Health request failed:", error)
+                    connection.cancel()
+                        eturn
+                }
+
+                connection.receive(
+                    minimumIncompleteLength: 1,
+                    maximumLength: 1024
+                ) { data, _, _, error in
+                    defer { connection.cancel() }
+
+                    if let error {
+                        print("Health check failed:", error)
+                    } else if let data {
+                        let reply = String(decoding: data, as: UTF8.self)
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                        print("Host replied:", reply)
+                        print(reply == "PONG" ? "Host is online" : "Unexpected reply")
+                        }
+                    }
+                }
+            )
+
+        case .failed(let error):
+            print("Could not connect to bank:", error)
+        default:
+            break
+        }
+    }
+
+connection.start(queue: .main)
