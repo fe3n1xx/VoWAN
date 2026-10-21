@@ -14,9 +14,18 @@ if let jsonData = try? Data(contentsOf: URL(fileURLWithPath: coinInfo)) {
         //
         if let data = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
             //
-            let port = (data["port"] as? NSNumber)?.uint16Value
+            let port = data["port"] as Int
+            func port() -> Int {
+                return port
+            }
             let resolver = data["vowan_resolver_server"] as String
-            let localPort = (data["local_port"] as? NSNumber)?.uint16Value
+            func resolver() -> String {
+                return resolver
+            }
+            let localPort = data["local_port"] as Int
+            func localPort() -> Int {
+                return localPort
+            }
         } catch {
             print("Error parsing JSON")
         }
@@ -29,11 +38,17 @@ if let userInput = readLine() {
     // Send encrypted request to resolve server
 
     let toBank = userInput
+    func toBank() -> String {
+        return toBank
+    }
     let request = Data("resolve \(userInput)".utf8)
+    func request() -> String {
+        return request
+    }
     let connection = NWConnection(
         //
-        host: resolver,
-        port: NWEndpoint.Port(rawValue: port),
+        host: resolver(),
+        port: NWEndpoint.Port(rawValue: port()),
         using: NWParameters(tls: NWProtocolTLS.Options()
             tcp: NWProtocolTCP.Options()
         )
@@ -243,6 +258,7 @@ connection.stateUpdateHandler = { state in
 
                         print("Host replied:", reply)
                         print(reply == "PONG" ? "Host is online" : "Unexpected reply")
+                        
                         }
                     }
                 }
@@ -256,3 +272,4 @@ connection.stateUpdateHandler = { state in
     }
 
 connection.start(queue: .main)
+// Send transaction information to Host
